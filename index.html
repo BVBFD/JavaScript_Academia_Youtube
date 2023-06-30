@@ -5,7 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" href="style.css" />
-    <script src="./script.js"></script>
   </head>
-  <body></body>
+  <body>
+    <div class="container">
+      <main class="mainTitle">
+        <h1>Main_Title</h1>
+        <ul class="titleUl"></ul>
+      </main>
+      <ul class="paginationBox"></ul>
+    </div>
+
+    <script>
+      const paginationBox = document.querySelector('.paginationBox');
+      const mainTitleBox = document.querySelector('.mainTitle');
+      const titleUlBox = document.querySelector('.titleUl');
+
+      const maxPageNum = 5;
+      let startIndex = 0;
+      let endIndex = maxPageNum;
+
+      const maxTitleNum = 5;
+
+      const displayTitle = (currentIndex, data) => {
+        titleUlBox.innerHTML = ``;
+        const startTitleRowIndex = currentIndex * maxTitleNum;
+        const lastTitleRowIndex = startTitleRowIndex + maxTitleNum;
+
+        const selectedData = data.slice(startTitleRowIndex, lastTitleRowIndex);
+
+        selectedData.forEach((li) => {
+          const titleLi = document.createElement('li');
+          titleLi.textContent = `${li.name}`;
+
+          titleUlBox.append(titleLi);
+        });
+      };
+
+      const initializePrevPagination = (maxPaginationNum, data) => {
+        startIndex = 0;
+        endIndex = maxPageNum;
+
+        paginationBox.innerHTML = ``;
+        displayPagination(startIndex, endIndex, maxPaginationNum, data);
+        displayTitle(startIndex, data);
+      };
+
+      const initializeNextPagination = (maxPaginationNum, data) => {
+        startIndex = maxPaginationNum - 5;
+        endIndex = maxPaginationNum;
+
+        paginationBox.innerHTML = ``;
+        displayPagination(startIndex, endIndex, maxPaginationNum, data);
+        displayTitle(startIndex, data);
+      };
+
+      const updateNextPagination = (maxPaginationNum, data) => {
+        if (endIndex >= maxPaginationNum) {
+          displayTitle(startIndex, data);
+          return;
+        } else {
+          paginationBox.innerHTML = ``;
+
+          startIndex += maxPageNum;
+          endIndex += maxPageNum;
+
+          displayPagination(startIndex, endIndex, maxPaginationNum, data);
+          displayTitle(startIndex, data);
+        }
+      };
+
+      const updatePrevPagination = (maxPaginationNum, data) => {
+        if (startIndex === 0) {
+          displayTitle(startIndex, data);
+          return;
+        } else {
+          paginationBox.innerHTML = ``;
+
+          startIndex -= maxPageNum;
+          endIndex -= maxPageNum;
+
+          displayPagination(startIndex, endIndex, maxPaginationNum, data);
+          displayTitle(startIndex, data);
+        }
+      };
+
+      const displayPagination = (
+        startIndex,
+        endIndex,
+        maxPaginationNum,
+        data
+      ) => {
+        const doubleLeftArrow = document.createElement('li');
+        doubleLeftArrow.textContent = '<<';
+        doubleLeftArrow.addEventListener('click', () => {
+          initializePrevPagination(maxPaginationNum, data);
+        });
+
+        const singleLeftArrow = document.createElement('li');
+        singleLeftArrow.textContent = '<';
+        singleLeftArrow.addEventListener('click', () => {
+          updatePrevPagination(maxPaginationNum, data);
+        });
+
+        paginationBox.append(doubleLeftArrow);
+        paginationBox.append(singleLeftArrow);
+
+        for (let i = startIndex; i < endIndex; i++) {
+          const paginationItem = document.createElement('li');
+          paginationItem.textContent = `${i + 1}`;
+          paginationItem.addEventListener('click', () => {
+            displayTitle(i, data);
+          });
+          paginationBox.append(paginationItem);
+        }
+
+        const singleRightArrow = document.createElement('li');
+        singleRightArrow.textContent = '>';
+        singleRightArrow.addEventListener('click', () => {
+          updateNextPagination(maxPaginationNum, data);
+        });
+
+        const doubleRightArrow = document.createElement('li');
+        doubleRightArrow.textContent = '>>';
+        doubleRightArrow.addEventListener('click', () => {
+          initializeNextPagination(maxPaginationNum, data);
+        });
+
+        paginationBox.append(singleRightArrow);
+        paginationBox.append(doubleRightArrow);
+      };
+
+      const getData = async () => {
+        const res = await fetch(
+          'https://jsonplaceholder.typicode.com/comments'
+        );
+        const data = await res.json();
+        const maxPaginationNum = Math.ceil(data.length / 5);
+
+        displayPagination(startIndex, endIndex, maxPaginationNum, data);
+        displayTitle(startIndex, data);
+      };
+
+      getData();
+    </script>
+  </body>
 </html>
